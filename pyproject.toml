@@ -1,0 +1,79 @@
+[project]
+name = "langgraph-project-template"
+version = "0.1.0"
+description = "A production ready FastAPI template for scaleable agentic application"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "arxiv>=2.2.0",
+    "celery>=5.5.3",
+    "fastapi[standard]>=0.116.1",
+    "gunicorn>=23.0.0",
+    "langchain>=0.3.27",
+    "langchain-anthropic>=0.3.19",
+    "langchain-community>=0.3.28",
+    "langchain-deepseek>=0.1.4",
+    "langchain-google-genai>=2.1.10",
+    "langchain-groq>=0.3.7",
+    "langchain-mcp-adapters>=0.1.9",
+    "langchain-ollama>=0.3.7",
+    "langchain-openai>=0.3.32",
+    "langchain-qwq>=0.2.1",
+    "langchain-text-splitters>=0.3.9",
+    "langextract>=1.0.8",
+    "langgraph>=0.6.6",
+    "opendal>=0.46.0",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+    "python-multipart>=0.0.20",
+    "redis>=6.4.0",
+    "rich>=14.1.0",
+    "sqlmodel>=0.0.24",
+    "tavily-python>=0.7.11",
+    "uvicorn>=0.35.0",
+    "wikipedia-api>=0.8.1",
+]
+
+[tool.ruff]
+lint.select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # isort
+    "D",    # pydocstyle
+    "D401", # First line should be in imperative mood
+    "T201",
+    "UP",
+]
+lint.ignore = [
+    "UP006",
+    "UP007",
+    # We actually do want to import from typing_extensions
+    "UP035",
+    # Relax the convention by _not_ requiring documentation for every function parameter.
+    "D417",
+    "E501",
+]
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "UP"]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.30.1",
+    "langgraph-cli[inmem]>=0.4.0",
+    "pytest>=8.4.1",
+    "ruff>=0.12.10",
+]
+
+[tool.uv]
+index-url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+extra-index-url = [
+    "https://mirrors.aliyun.com/pypi/simple/",
+    "https://pypi.mirrors.ustc.edu.cn/simple/",
+]
