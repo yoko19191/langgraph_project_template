@@ -1,5 +1,8 @@
 import os
 
+from langchain.chat_models.base import _check_pkg
+
+
 try:
     from pydantic import SecretStr
 except ImportError:
@@ -15,4 +18,8 @@ def _get_env_var(env_var: str) -> str | None:
     """获取环境变量."""
     value = os.getenv(env_var)
     return value if value else None
+
+
+
+
 

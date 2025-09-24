@@ -10,7 +10,8 @@ dependencies = [
     "celery>=5.5.3",
     "fastapi[standard]>=0.116.1",
     "gunicorn>=23.0.0",
-    "langchain>=0.3.27",
+    "ipykernel>=7.0.0a2",
+    "langchain>=1.0.0a3",
     "langchain-anthropic>=0.3.19",
     "langchain-community>=0.3.28",
     "langchain-deepseek>=0.1.4",
@@ -20,9 +21,11 @@ dependencies = [
     "langchain-ollama>=0.3.7",
     "langchain-openai>=0.3.32",
     "langchain-qwq>=0.2.1",
+    "langchain-siliconflow>=0.1.3",
     "langchain-text-splitters>=0.3.9",
+    "langchain-xinference>=0.1.2",
     "langextract>=1.0.8",
-    "langgraph>=0.6.6",
+    "langgraph==1.0.0a1",
     "opendal>=0.46.0",
     "pydantic>=2.11.7",
     "python-dotenv>=1.1.1",
@@ -71,9 +74,13 @@ dev = [
     "ruff>=0.12.10",
 ]
 
+[tool.uv.pip]
+prerelease = "allow"
+
 [tool.uv]
 index-url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 extra-index-url = [
     "https://mirrors.aliyun.com/pypi/simple/",
     "https://pypi.mirrors.ustc.edu.cn/simple/",
 ]
+
