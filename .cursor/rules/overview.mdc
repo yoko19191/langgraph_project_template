@@ -1,0 +1,118 @@
+---
+alwaysApply: false
+---
+LangGraph Project Template Rules
+This document outlines the core development rules for this project. Its purpose is to guide AI-assisted code generation and modifications, ensuring consistency, readability, and extensibility across the codebase.
+
+1. Core Project Philosophy
+Objective: To provide a LangGraph project template that implements 90% of the features required by 90% of developers.
+
+Core Framework: LangGraph
+
+Design Principles: Prioritize modular extensibility and readability. All code must be Pythonic to allow other developers to easily fork the repository and build upon it.
+
+2. Tech Stack & Tooling
+Python Version: Strictly Python 3.12.
+
+Environment & Package Management: Use uv for virtual environment creation and dependency management.
+
+Create environment: uv venv
+
+Install dependencies: uv pip install -r requirements.txt or uv pip install .
+
+Code Linting & Formatting: Use Ruff for all code formatting and linting. Configuration should be defined within the pyproject.toml file.
+
+Testing Framework: Use Pytest for unit and integration tests.
+
+3. Code Style & Conventions
+Standard: Strictly adhere to the PEP 8 style guide.
+
+Indentation: Use 4 spaces for indentation. Tabs are not permitted.
+
+Type Hinting: Strongly recommended for all function definitions and key variables to improve code clarity and robustness.
+
+Naming Conventions:
+
+Variables, functions, and modules: snake_case.
+
+Classes: PascalCase.
+
+Constants: UPPER_SNAKE_CASE.
+
+Modularity:
+
+Separate distinct functionalities into independent modules or files. For instance, the graph's State, Nodes, Tools, and Builder logic should be in separate files.
+
+Avoid creating monolithic files. Each module should have a single, well-defined responsibility.
+
+4. Project Structure
+The project must adopt a src layout to cleanly separate source code from configuration files.
+
+.
+├── .gitignore          # Git ignore configuration
+├── pyproject.toml      # Project metadata, dependencies, and Ruff/Pytest config
+├── README.md           # Project documentation
+├── src
+│   └── langgraph_template
+│       ├── __init__.py
+│       ├── app         # Core graph logic
+│       │   ├── __init__.py
+│       │   ├── common  # commonly used repackaged modules
+│       │   ├── prebuild  # prebuild agent and multi-agents
+│       │   └── utils.py # utilties tools for building project
+│       ├── tools         # Toolset for use by agents
+│       │   └── __init__.py
+│       └── main.py       # Entry point / example runner
+└── tests
+    ├── __init__.py
+    └── test_graph.py     # Tests specifically for the graph logic
+
+5. Version Control & Communication
+Commit Messages:
+
+Language: Must be written in clear, concise, and readable English.
+
+Format: Follow the Conventional Commits specification.
+
+feat: (a new feature)
+
+fix: (a bug fix)
+
+docs: (documentation only changes)
+
+style: (changes that do not affect the meaning of the code)
+
+refactor: (a code change that neither fixes a bug nor adds a feature)
+
+test: (adding missing tests or correcting existing tests)
+
+chore: (changes to the build process or auxiliary tools)
+
+Example: feat: add retrieval-augmented generation node
+
+Code Comments:
+
+Language: Must be written in English.
+
+Purpose: Comments should explain the "why," not the "what." The code itself should be self-explanatory about what it does.
+
+Example:
+
+# We retry the API call with exponential backoff to handle transient network issues.
+response = call_llm_with_retry(prompt)
+
+6. Testing
+Test files must be located in the tests/ directory.
+
+Test filenames must begin with test_.
+
+Ensure high test coverage for core business logic, especially graph nodes and state transitions.
+
+Run tests using the command: uv run pytest.
+
+How to Use This File:
+When interacting with Cursor or another AI assistant, you can reference these rules to guide its output. For example:
+
+"Please create a new agent tool, following the conventions in CURSOR_RULES.md."
+"Refactor the graph builder according to our project rules, making it more modular."
+"Check the current file for compliance with our project rules and format it with Ruff."

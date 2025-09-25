@@ -38,6 +38,9 @@ dependencies = [
     "wikipedia-api>=0.8.1",
 ]
 
+[tool.setuptools]
+packages = ["src"]
+
 [tool.ruff]
 lint.select = [
     "E",    # pycodestyle
