@@ -6,13 +6,11 @@
       "deepwiki": {
         "url": "https://mcp.deepwiki.com/mcp"
       },
-       "context7": {
+      "context7": {
           "command": "npx",
           "args": [
             "-y",
-            "@upstash/context7-mcp@latest",
-            "--api-key",
-            "ctx7sk-3865f4d1-ade1-44fb-b7b9-7030fc799418"
+            "@upstash/context7-mcp@latest"
             ]
       }
     }

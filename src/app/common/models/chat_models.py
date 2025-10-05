@@ -5,6 +5,7 @@ Enhanced version of langchain init_chat_model with support for more Chinese loca
 from __future__ import annotations
 
 import importlib
+import logging
 import warnings
 from dataclasses import dataclass
 from typing import (
@@ -24,10 +25,12 @@ from langchain_core.language_models import (
 )
 
 from src.app.common.utils import (
+    _check_pkg,
     _get_api_key,
-    _get_env_var,
+    _get_env_var
 )
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class ProviderConfig:
