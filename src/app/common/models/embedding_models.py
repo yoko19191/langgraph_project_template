@@ -166,7 +166,7 @@ def init_embedding_model(
 
         >>> # Initialize Google embeddings
         >>> embeddings = init_embedding_model(
-        ...     model="models/embedding-001",
+        ...     model="gemini-embedding-001",
         ...     provider="google"
         ... )
     """
