@@ -3,7 +3,7 @@ from langchain_core.tools import BaseTool
 from langchain_core.language_models import LanguageModelLike
 from langgraph.types import Checkpointer
 from langchain.agents import create_agent
-from langchain.agents.middleware import AgentMiddleware, SummarizationMiddleware, HumanInTheLoopMiddleware
+from langchain.agents.middleware import AgentMiddleware, HumanInTheLoopMiddleware
 from langchain.agents.middleware.human_in_the_loop import ToolConfig
 from langchain.agents.middleware.prompt_caching import AnthropicPromptCachingMiddleware
 
@@ -36,11 +36,11 @@ def agent_builder(
             model=model,
             is_async=is_async,
         ),
-        SummarizationMiddleware(
-            model=model,
-            max_tokens_before_summary=120000,
-            messages_to_keep=20,
-        ),
+        # SummarizationMiddleware(
+        #     model=model,
+        #     max_tokens_before_summary=120000,
+        #     messages_to_keep=20,
+        # ),
         AnthropicPromptCachingMiddleware(ttl="5m", unsupported_model_behavior="ignore")
     ]
     # Add tool interrupt config if provided

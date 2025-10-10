@@ -1,6 +1,8 @@
 {
     "dockerfile_lines": [],
-    "graphs": {},
+    "graphs": {
+      "react_agent": "src/app/agents/react.py:agent"
+    },
     "python_version": "3.12",
     "env": "./.env",
     "dependencies": [

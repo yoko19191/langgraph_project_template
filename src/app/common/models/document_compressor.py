@@ -13,7 +13,7 @@ from typing import Any
 
 from langchain_core.documents import BaseDocumentCompressor
 
-from src.app.common.utils import _get_api_key, _get_env_var
+from src.app.common.utils.load import _get_api_key, _get_env_var
 
 logger = logging.getLogger(__name__)
 

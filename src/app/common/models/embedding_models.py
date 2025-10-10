@@ -2,6 +2,7 @@
 
 Provides a unified interface for initializing embedding models from various providers.
 Follows the same config-driven design pattern as chat_models.py for consistency.
+Supports optional caching via LangChain's CacheBackedEmbeddings.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 import importlib
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict
 
 from langchain.embeddings.base import Embeddings
@@ -107,13 +109,17 @@ def init_embedding_model(
     *,
     model_provider: str | None = None,
     provider: str | None = None,  # Alias for model_provider for convenience
+    cache: bool = False,
+    cache_dir: str | Path | None = None,
+    cache_namespace: str | None = None,
+    cache_in_memory: bool = False,
     **kwargs: Any,
 ) -> Embeddings:
-    """Initialize embedding model with specified provider.
+    """Initialize embedding model with specified provider and optional caching.
 
     This function provides a unified interface for creating embedding models from
     various providers. It follows a config-driven approach for consistency and
-    maintainability.
+    maintainability. Supports optional caching via LangChain's CacheBackedEmbeddings.
 
     Supported providers:
     - openai: OpenAI embedding models(text-embedding only)
@@ -129,10 +135,15 @@ def init_embedding_model(
         model: Model name/identifier
         model_provider: Provider name (must be one of supported providers)
         provider: Alias for model_provider (for convenience)
+        cache: Whether to enable embedding caching (default: False)
+        cache_dir: Directory for file-based caching. If None and cache=True, 
+                  uses "./embeddings_cache" (default: None)
+        cache_namespace: Namespace for cache keys. If None, uses model name (default: None)
+        cache_in_memory: Use in-memory caching instead of file-based (default: False)
         **kwargs: Additional model-specific parameters
 
     Returns:
-        Embeddings: Initialized embedding model instance
+        Embeddings: Initialized embedding model instance (optionally cached)
 
     Raises:
         ValueError: When provider is not specified or not supported
@@ -140,34 +151,33 @@ def init_embedding_model(
         AttributeError: When model class is not found in module
 
     Examples:
-        >>> # Initialize OpenAI embeddings
+        >>> # Initialize OpenAI embeddings without caching
         >>> embeddings = init_embedding_model(
         ...     model="text-embedding-3-small",
         ...     model_provider="openai"
         ... )
 
-        >>> # Using provider alias (more concise)
+        >>> # Initialize with file-based caching
         >>> embeddings = init_embedding_model(
         ...     model="text-embedding-3-small",
-        ...     provider="openai"
+        ...     provider="openai",
+        ...     cache=True,
+        ...     cache_dir="./my_cache"
         ... )
 
-        >>> # Initialize DashScope embeddings
+        >>> # Initialize with in-memory caching
+        >>> embeddings = init_embedding_model(
+        ...     model="text-embedding-3-small",
+        ...     provider="openai",
+        ...     cache=True,
+        ...     cache_in_memory=True
+        ... )
+
+        >>> # Initialize DashScope embeddings with caching
         >>> embeddings = init_embedding_model(
         ...     model="text-embedding-v4",
-        ...     provider="dashscope"
-        ... )
-
-        >>> # Initialize Xinference local embeddings
-        >>> embeddings = init_embedding_model(
-        ...     model="bge-large-zh-v1.5",
-        ...     provider="xinference"
-        ... )
-
-        >>> # Initialize Google embeddings
-        >>> embeddings = init_embedding_model(
-        ...     model="gemini-embedding-001",
-        ...     provider="google"
+        ...     provider="dashscope",
+        ...     cache=True
         ... )
     """
     # Handle provider alias - "Explicit is better than implicit"
@@ -188,11 +198,24 @@ def init_embedding_model(
     # Normalize provider name
     normalized_provider = model_provider.replace("-", "_").lower()
 
-    return _create_embedding_model(
+    # Create base embedding model
+    base_embeddings = _create_embedding_model(
         model=model,
         provider=normalized_provider,
         **kwargs,
     )
+
+    # Add caching if requested
+    if cache:
+        return _create_cached_embeddings(
+            base_embeddings=base_embeddings,
+            model=model,
+            cache_dir=cache_dir,
+            cache_namespace=cache_namespace,
+            cache_in_memory=cache_in_memory,
+        )
+
+    return base_embeddings
 
 
 def _create_embedding_model(
@@ -317,3 +340,89 @@ def _build_embedding_params(
                 params["server_url"] = server_url
 
     return params
+
+
+def _create_cached_embeddings(
+    base_embeddings: Embeddings,
+    model: str | None,
+    cache_dir: str | Path | None,
+    cache_namespace: str | None,
+    cache_in_memory: bool,
+) -> Embeddings:
+    """Create cached embeddings using CacheBackedEmbeddings.
+
+    Args:
+        base_embeddings: The underlying embedding model to cache
+        model: Model name for default namespace
+        cache_dir: Directory for file-based caching
+        cache_namespace: Namespace for cache keys
+        cache_in_memory: Whether to use in-memory caching
+
+    Returns:
+        Embeddings: CacheBackedEmbeddings instance
+
+    Raises:
+        ImportError: When required caching packages are not installed
+    """
+    try:
+        from langchain.embeddings import CacheBackedEmbeddings
+        from langchain.storage import InMemoryByteStore
+        
+        # Choose storage type
+        store_type = "in-memory"
+        
+        if cache_in_memory or cache_dir is None:
+            # Use in-memory storage
+            store = InMemoryByteStore()
+            logger.info("Using in-memory embedding cache")
+        else:
+            # Try to use file-based storage
+            try:
+                from langchain.storage import LocalFileStore
+                # Ensure cache directory exists
+                cache_path = Path(cache_dir)
+                cache_path.mkdir(parents=True, exist_ok=True)
+                store = LocalFileStore(str(cache_path))
+                store_type = "file-based"
+                logger.info(f"Using file-based embedding cache at: {cache_path}")
+            except ImportError:
+                # Fall back to in-memory if LocalFileStore is not available
+                logger.warning(
+                    "LocalFileStore not available in current LangChain version. "
+                    "Falling back to in-memory caching. "
+                    "Consider upgrading LangChain for persistent file caching."
+                )
+                store = InMemoryByteStore()
+        
+        # Determine namespace for cache keys
+        if cache_namespace is None:
+            # Try to get model name from the embedding instance
+            if hasattr(base_embeddings, 'model'):
+                cache_namespace = base_embeddings.model
+            elif model:
+                cache_namespace = model
+            else:
+                cache_namespace = base_embeddings.__class__.__name__
+        
+        # Create cached embeddings
+        cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+            underlying_embeddings=base_embeddings,
+            document_embedding_cache=store,
+            namespace=cache_namespace,
+            key_encoder="sha256"
+        )
+        
+        logger.info(
+            f"Created cached embeddings with namespace '{cache_namespace}' "
+            f"using {store_type} storage"
+        )
+        
+        return cached_embeddings
+        
+    except ImportError as e:
+        logger.warning(
+            f"Failed to import caching dependencies: {e}. "
+            "Falling back to non-cached embeddings. "
+            "Install required packages with: pip install langchain"
+        )
+        return base_embeddings
